@@ -1,0 +1,49 @@
+{
+  "tf_agent": {
+    "num_iterations": 5000,
+    "initial_collect_steps": 2000,
+    "collect_steps_per_iteration": 1,
+    "replay_buffer_capacity": 100000,
+    "fc_layer_params": [100],
+    "batch_size": 128,
+    "learning_rate": 1e-3,
+    "gamma": 0.99,
+    "log_interval": 200,
+    "num_atoms": 51,
+    "min_q_value": -50,
+    "max_q_value": 50,
+    "n_step_update": 3,
+    "num_eval_episodes": 10,
+    "eval_interval": 1000,
+    "terminate_early": true,
+    "test_mode": false
+  },
+  "ray_agent": {
+    "agent": "PPO",
+    "num_workers": 5,
+    "num_gpus": 0,
+    "rollout_fragment_length": 50,
+    "horizon": 50,
+    "train_batch_size": 4000,
+    "stop": {
+      "training_iterations": 20,
+      "timesteps_total": 100000,
+      "episode_reward_mean": 80
+    }
+  },
+  "environment": {
+    "invalid_move_penalty": -5.0,
+    "shuffle_moves_limit": 60,
+    "done_cost": "auto"
+  },
+  "view": {
+    "color": false,
+    "view_tf_agent": true
+  },
+  "data_path": "./data/shuffleSlots_extend.xlsx",
+  "box_freeze": true,
+  "terminals": "all",
+  "blocks": ["M04"],
+  "slots": [32],
+  "empty_levels_threshold": 3
+}
