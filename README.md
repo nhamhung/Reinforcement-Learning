@@ -8,4 +8,9 @@ As PSA is a transshipment hub, there are many containers lying in her terminals 
 
 As such, it would benefit greatly if these containers are pre-shuffled beforehand. 
 
-Currently, this job is done by human operators one slot of containers at a time, so the aim for this project is to have a RL agent which can take into account operators' intuition and perform this job for them automatically and optimally as much as possible
+Currently, this job is done by human operators one slot of containers at a time, so the aim for this project is to have a RL agent which can take into account operators' intuition and perform this job for them automatically and optimally as much as possible.
+
+## Frameworks used
+
+1. [RLLib](https://docs.ray.io/en/latest/rllib.html)
+2. [TF-Agents](https://www.tensorflow.org/agents)
