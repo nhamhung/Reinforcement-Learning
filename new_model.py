@@ -502,8 +502,8 @@ class State:
             f"{container_group.vessel}_{container_group.etb}:{container_group.etu}_{container_group.port_mark}_{container_group.size}_{container_group.category}" for container_group in self.container_groups.keys()]
         self.group_to_num_map = map_group_to_num(
             self.container_group_names)
-        self.group_to_color_map = map_group_to_color(
-            self.container_group_names)
+        # self.group_to_color_map = map_group_to_color(
+        #     self.container_group_names)
         self.longest_container_name = max(
             [len(container.__str__()) for row in self.rows for container in row])
 
@@ -783,7 +783,7 @@ class State:
 
     def compute_done_cost(self):
         """
-        Try to estimate done cost for early termination if possible. With container priority in place, this estimation might need to be updated.
+        *** CURRENTLY NOT USED. Try to estimate done cost for early termination if possible. With container priority in place, this estimation might need to be updated.
         """
         # overstow only
         if self.shuffling_type == 0:
@@ -993,12 +993,11 @@ class State:
                     container_name = container.__str__()
                     container_str = container_name if len(
                         container_name) == self.longest_container_name else container_name.ljust(self.longest_container_name, ' ')
-                    color = 'white' if self.group_to_color_map[
-                        f'{container.short_name()}'] == 'black' else 'black'
-
                     if mode == 'color':
                         final_string += color_print(container_str, color,
                                                     self.group_to_color_map[f'{container.short_name()}'], end='  ')
+                        color = 'white' if self.group_to_color_map[
+                        f'{container.short_name()}'] == 'black' else 'black'
                     elif mode == 'plain':
                         final_string += container_str + '  '
             final_string += '\n'
@@ -1185,11 +1184,11 @@ class RayContainerShuffleEnv(gym.Env):
         # Feedback emitted by the environment
         return self.state, reward, done, {}
 
-    def render(self, mode='human'):
+    def render(self, mode='plain'):
         """
         Render the current state of the environment
         """
-        print(self.change_state.cprint(mode='color'))
+        print(self.change_state.cprint(mode=mode))
 
     def reset(self):
         """
@@ -1274,7 +1273,7 @@ if __name__ == '__main__':
     all_terminals_shuffle_config.set_index('ct', inplace=True)
     
     # Load all data in
-    full_df = load_full_data()
+    full_df = load_full_data(content['data_path'])
 
     # Load unusable space in
     unusable_space = load_unusable_space()
@@ -1638,13 +1637,13 @@ if __name__ == '__main__':
                     env = RayContainerShuffleEnv(env_config)
                     obs = env.reset()
                     done = False
-                    print(env.render(mode='color'))
+                    print(env.render(mode='plain'))
                     f.write(f'Slot {slot_no} solution: ')
 
                     # Compute action at each step and take that action
                     for _ in range(environment_config['shuffle_moves_limit']):
                         if done:
-                            print(env.render(mode='color'))
+                            print(env.render(mode='plain'))
                             print(env.change_state.get_row_costs())
                             break
                         action = trainer.compute_action(obs)

@@ -14,12 +14,17 @@ def timer(func):
         return value
     return wrapper_timer
 
-
 def get_hours_difference(time_1, time_2):
+    """
+    Get time difference in hours between two timestamps.
+    """
     return int((time_1 - time_2).total_seconds() // 3600)
 
 
 def map_group_to_num(groups):
+    """
+    Map each container group to a number.
+    """
     encoding_dict = {}
     encode_num = 1
     for group in groups:
@@ -29,17 +34,10 @@ def map_group_to_num(groups):
     return encoding_dict
 
 
-def convert_action_to_log(action, max_rows):
-    row_origin = action // (max_rows - 1)  # pos of container to move
-    mod = action % (max_rows - 1)  # modulo of current action
-    if mod < row_origin:
-        row_dest = mod
-    else:
-        row_dest = mod + 1
-    return f"Moving container from row {row_origin + 1} to row {row_dest + 1}"
-
-
 def convert_action_to_move(action, max_rows, index=0):
+    """
+    Convert action to according move which consists of (row_origin, row_dest) subject to 0 or 1-based index.
+    """
     row_origin = action // (max_rows - 1)  # pos of container to move
     mod = action % (max_rows - 1)  # modulo of current action
     if mod < row_origin:
@@ -50,10 +48,18 @@ def convert_action_to_move(action, max_rows, index=0):
 
 
 def print_legal_moves(action_mask, max_rows):
+    """
+    @param1: action mask of size (action_space,) where entry 1 at index i denote i as a legal action.
+    @param2: max_rows caters to different scenarios when number of rows is 6 or 10 or 6/10 * number of slots in the case of multiple slot shuffling.
+    @return: list of legal moves in the form (row_origin, row_dest)
+    """
     return [convert_action_to_move(action, max_rows) for action in np.where(action_mask == 1)[0]]
 
 
 def map_group_to_color(groups):
+    """
+    Map each container group to a different color for color printing.
+    """
     group_map_dict = map_group_to_num(groups)
     colors = ["black", "red", "green", "orange", "blue", "purple", "dark green", "white", "cyan", "brown", "light coral", "dark salmon", "gold", "dark khaki", "plum", "chocolate", "royal blue", "ivory", "azure", "lavender", "old lace", "misty rose",
               "moccasin", "bisque", "light pink", "sky blue", "turquoise", "yellow green", "golden rod", "tan", "olive drab", "lime green", "dark sea green", "sea green", "deep sky blue", "medium purple", "medium orchid", "thistle", "pale violet red", "peru"]
@@ -61,11 +67,16 @@ def map_group_to_color(groups):
 
 
 def convert_move_to_action(row_origin, row_dest, max_rows):
+    """
+    Convert from move to action for testing.
+    """
     move_to_action_map = {convert_action_to_move(
         a, max_rows): a for a in range(max_rows * (max_rows - 1))}
     return move_to_action_map[(row_origin, row_dest)]
 
-
+"""
+Background colors for printing each slot state.
+"""
 BACKGROUND_COLORS = {"black": ("0;{};40", "#A9A9A9"),  # hex color different
                      "red": ("0;{};41", "#FF0000"),
                      "green": ("0;{};42", "#008000"),
@@ -132,6 +143,9 @@ def get_hex_bg_color(color):
 
 
 def shorten_actions(actions):
+    """
+    Shorten the action sequence if two consecutive actions are transitive.
+    """
     enhanced_actions = []
     current_index = -1
     for i, action in enumerate(actions):
@@ -156,7 +170,3 @@ def shorten_actions(actions):
             enhanced_actions.append(action)
 
     return enhanced_actions
-
-
-# print(shorten_actions([(5, 2), (5, 2), (5, 2), (2, 1), (2, 5), (2, 5), (4, 5), (1, 4), (4, 2), (4, 5), (2, 4), (4, 1), (1, 2), (2, 4),
-#                        (4, 1), (1, 2), (2, 4), (4, 1), (1, 2), (2, 4), (4, 1), (1, 2), (2, 4), (4, 1), (1, 2), (2, 4), (4, 1), (1, 2), (2, 4), (4, 1)]))

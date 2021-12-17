@@ -9,6 +9,9 @@ class GNode(object):
 
 
 def group_actions(actions):
+    """
+    Use concepts similar to topological sort by generating a DAG. 
+    """
     converted_actions = [convert_action_to_move(
         action, 6, index=1) for action in actions]
 

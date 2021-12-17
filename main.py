@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import tqdm
 from container import Container
@@ -8,7 +9,7 @@ from data_loader import load_full_data, load_blk_data, load_unusable_space, prep
 from state import State
 from tf_agent import tf_agent_initialize_and_train
 from utils import convert_action_to_log, convert_action_to_move, shorten_actions
-from view import generate_summary
+from view import generate_summary, generate_slots_summary
 from action_group import group_actions, get_action_groups_str
 import argparse
 import os
@@ -98,7 +99,6 @@ if __name__ == '__main__':
         shuffle_to_range = shuffle_to_range_df.loc[block_yc_type]
 
         to_left, to_right = shuffle_to_range['toLeft'], shuffle_to_range['toRight']
-        print(to_left, to_right)
 
         # Generate block summary for viewing
         generate_summary(blk, block_df, block_shuffle_config, block_unusable_space,
@@ -124,6 +124,10 @@ if __name__ == '__main__':
             # If this yard crane requires inter-slot shuffling
             if to_left or to_right:
 
+                # Get number of slot rows
+                max_rows = 6
+                max_levels = 5
+
                 to_left_slots = [
                     slot for slot in distinct_slots if slot >= slot_no - to_left and slot < slot_no]
                 print("TO LEFT: ", to_left_slots)
@@ -132,14 +136,47 @@ if __name__ == '__main__':
                     slot for slot in distinct_slots if slot <= slot_no + to_right and slot > slot_no]
                 print("TO RIGHT: ", to_right_slots)
 
+                # Initialize to combine all slots
                 all_slots = to_left_slots + [slot_no] + to_right_slots
-
-                slot_states = []
+                combined_slots_df = pd.DataFrame()
+                total_max_rows = 0
 
                 for slot in all_slots:
-                    # Get each slot dataframe
-                    slot = preprocess(
-                        block_df[block_df['slotTo'] == slot_no], box_freeze=content['box_freeze'])
+                    slot_df = preprocess(
+                        block_df[block_df['slotTo'] == slot], box_freeze=False)
+
+                    # Increment slot rows
+                    slot_df['row'] = slot_df['row'].apply(
+                        lambda x: x + total_max_rows)
+
+                    # Get a new combined slots dataframe
+                    combined_slots_df = pd.concat([combined_slots_df, slot_df])
+                    total_max_rows += max_rows
+
+                    # Mark slot as already shuffled
+                    already_shuffled_slots.add(slot)
+
+                print("Total max rows: ", total_max_rows)
+
+                state = State(total_max_rows, max_levels,
+                              block_shuffle_config, unusable_rows=None)
+                state.fill_rows(combined_slots_df)
+
+                slot_strings = "_".join([str(slot) for slot in all_slots])
+
+                generate_slots_summary(
+                    slot_strings, state, total_max_rows, max_levels)
+
+                # Train agent and use it to output solution for each slot
+                agent_config = content['tf_agent']
+                # Twitch number of iterations for different scenarios
+
+                unusable_rows = None
+
+                all_slot_actions[f'{slot_strings}'] = []
+
+                tf_agent_initialize_and_train(
+                    agent_config, environment_config, block_shuffle_config, unusable_rows, combined_slots_df, slot_strings, total_max_rows, max_levels, all_slot_actions, True, len(all_slots), max_rows)
 
             # Just shuffle within the slot
             else:
@@ -193,8 +230,6 @@ if __name__ == '__main__':
                     # Train agent and use it to output solution for each slot
                     agent_config = content['tf_agent']
                     # Twitch number of iterations for different scenarios
-                    # if not state.is_solvable():
-                    #     agent_config['num_iterations'] = 5000
 
                     tf_agent_initialize_and_train(
                         agent_config, environment_config, block_shuffle_config, unusable_rows, slot, slot_no, max_rows, max_levels, all_slot_actions)
