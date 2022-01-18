@@ -10,7 +10,15 @@ As such, it would benefit greatly if these containers are pre-shuffled beforehan
 
 Currently, this job is done by human operators one slot of containers at a time, so the aim for this project is to have a RL agent which can take into account operators' intuition and perform this job for them automatically and optimally as much as possible.
 
+## Entry point
+
+There are 2 versions of the same model being used using RLLib and TF-Agents:
+
+1. `combined_model.py` is the model with Ray's RLLib which is more updated
+2. `main.py` is the model with TF-Agents
+
 ## Frameworks used
 
 1. [RLLib](https://docs.ray.io/en/latest/rllib.html)
 2. [TF-Agents](https://www.tensorflow.org/agents)
+
